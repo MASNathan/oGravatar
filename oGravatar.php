@@ -1,5 +1,10 @@
 <?php
 
+require_once 'exceptions/oGravatarRequestFailedException.php';
+require_once 'exceptions/oGravatarInvalidEmailException.php';
+require_once 'exceptions/oGravatarInvalidSizeException.php';
+require_once 'exceptions/oGravatarInvalidRatingException.php';
+
 
 class oGravatar
 {
@@ -13,7 +18,7 @@ class oGravatar
 	const RATING_X 	= 'x';
 	
 	/*
-	 * Default images
+	 * Default images constants
 	 */
 	const DEFAULT_404 		= '404';
 	const DEFAULT_MM 		= 'mm';
@@ -22,7 +27,7 @@ class oGravatar
 	const DEFAULT_WAVATAR 	= 'wavatar';
 
 	/**
-	 * Gravatar urls
+	 * Gravatar urls constants
 	 */
 	const HTTP_URL 	= 'http://en.gravatar.com';
 	const HTTPS_URL = 'https://secure.gravatar.com';
@@ -59,7 +64,7 @@ class oGravatar
 	public function __construct($email, $secure_request = false)
 	{
 		if(!$this->isEmail($email)) {
-			throw new Exception("Invalid email.");
+			throw new oGravatarInvalidEmailException;
 		}
 
 		$this->email = $email;
@@ -99,24 +104,27 @@ class oGravatar
 	}
 
 	/**
-	 * If no attribute is passed it'll return the avatar src, if passed any attribute/value it'll be returned the image HTML
+	 * It'll return the img DOM element HTML
 	 * @param array $attributes HTML attributes to apply to the image
 	 * @return string
 	 */
 	public function getAvatar($attributes = array())
 	{
-		$url = sprintf("%s/avatar/%s?%s", $this->getSource(), $this->email_hash, http_build_query($this->params));
-
-		if(empty($attributes)) {
-			return $url;
-		}
-
 		$tmp_attributes = '';
 		foreach ($attributes as $key => $value) {
 			$tmp_attributes .= sprintf(' %s="%s" ', $key, $value);
 		}
 
-		return sprintf('<img src="%s" %s />', $url, $tmp_attributes);
+		return sprintf('<img src="%s" %s />', $this->getAvatarUrl(), $tmp_attributes);
+	}
+
+	/**
+	 * Returns the avatar URL
+	 * @return string
+	 */
+	public function getAvatarUrl()
+	{
+		return sprintf("%s/avatar/%s?%s", $this->getSource(), $this->email_hash, http_build_query($this->params));
 	}
 
 	/**
@@ -127,8 +135,6 @@ class oGravatar
 	{
 		$url = sprintf("%s/%s.php", $this->getSource(), $this->email_hash);
 
-		echo $url;
-
 		$curl = curl_init($url);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -136,7 +142,7 @@ class oGravatar
 		curl_close($curl);
 
 		if(empty($curl_response)) {
-			throw new Exception("Failed to request profile info.");
+			throw new oGravatarRequestFailedException;
 		}
 
 		$trash = unserialize($curl_response);
@@ -159,11 +165,11 @@ class oGravatar
 	public function setSize($size)
 	{
 		if(!is_integer($size)) {
-			throw new Exception("The size must be an integer.");
+			throw new oGravatarInvalidSizeException("The size must be an integer.");
 		}
 
 		if($size > 2048 || $size < 1) {
-			throw new Exception("The size must be greater than 1 and less than 2048.");
+			throw new oGravatarInvalidSizeException("The size must be greater than 1 and less than 2048.");
 		}
 
 		$this->params['s'] = $size;
@@ -189,7 +195,7 @@ class oGravatar
 	public function setRating($rating)
 	{
 		if(!in_array($rating, array('g', 'pg', 'r', 'x'))) {
-			throw new Exception("Invalid image rating");
+			throw new oGravatarInvalidRatingException;
 		}
 
 		$this->params['r'] = $rating;
