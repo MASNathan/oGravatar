@@ -5,7 +5,15 @@ require_once 'exceptions/oGravatarInvalidEmailException.php';
 require_once 'exceptions/oGravatarInvalidSizeException.php';
 require_once 'exceptions/oGravatarInvalidRatingException.php';
 
-
+/**
+ * Simple class that provides easy gravatar integration
+ * 
+ * @package	oGravatar
+ * @author	André Filipe <andre.r.flip@gmail.com>
+ * @link	https://github.com/ReiDuKuduro/oGravatar Github Repo
+ * @license	MIT
+ * @version	1.0
+ */
 class oGravatar
 {
 
@@ -22,7 +30,7 @@ class oGravatar
 	 */
 	const DEFAULT_404 		= '404';
 	const DEFAULT_MM 		= 'mm';
-	const DEFAULT_IDEnTICON = 'identicon';
+	const DEFAULT_IDENTICON = 'identicon';
 	const DEFAULT_MONSTERID = 'monsterid';
 	const DEFAULT_WAVATAR 	= 'wavatar';
 
